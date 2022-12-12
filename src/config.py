@@ -1,1 +1,1 @@
-MAX_K: int = 10
+MAX_K: int = 50
