@@ -36,6 +36,10 @@ async def run_algo(opt_type: OptType, params: OptimizeRequestModel):
 
 @sim_router.post("/compare_algo", response_model=CompareResponseModel)
 async def compare_algo():
+    """This route generates and returns stats for the two optimisation algorithms, that can be used to plot the differences in performance between the two algorithms as a function of `num_lists`
+    Ideally something like this would not run the algorithms everytime, but for the purpose of demonstration it runs the same benchmark simulation for a case, one that best shows the difference
+    between the two algorithms, every time the API is invoked.
+    """
     loop = asyncio.get_event_loop()
     result = {"data": []}
     seed = "TEST_SEED"
