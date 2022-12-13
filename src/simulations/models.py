@@ -1,9 +1,6 @@
-import random, time
 from enum import Enum
 from pydantic import BaseModel, Field
-from statistics import fmean
-from typing import Callable, List, Tuple
-from utils.modulo_maximisation import naive, efficient
+from typing import Callable, List
 
 
 class OptType(str, Enum):
@@ -25,32 +22,29 @@ class BenchmarkRequestModel(BaseModel):
         use_enum_values = True
 
 
+class BenchmarkResponseModel(BaseModel):
+    label: OptType = Field(description="Type of algo that was benchmarked")
+    mean_wall_time: float = Field(description="Mean execution time for algo")
+    total_sim_time: float = Field(description="Total simulation time")
+
+    class Config:
+        use_enum_values = True
+
+
 class OptimizeRequestModel(BaseModel):
     lists: List[List[int]] = Field(description="A Set of lists of integers")
     m: int = Field(description="Value of the modulo variable")
     f: Callable = Field(const=True, default=lambda x: x**2)
 
 
-def get_sim_data(num_lists: int, num_elements: int) -> Tuple[List[List[int]], int]:
-    M = random.randint(1, 100)
-    lists = []
-    lists.append(random.sample(range(1, 10**9), num_elements))
-    while len(lists) <= num_lists:
-        lists.append(random.sample(range(1, 10**9), random.randint(1, num_elements)))
-    return list(lists), M
+class OptimizeResponseModel(BaseModel):
+    max: int = Field(description="Max value for the modulo function")
 
 
-def benchmark_simulation(opt_type: OptType, replication: int, num_lists: int, num_elements: int):
-    execution_times = []
-    sim_start = time.time()
-    for _ in range(replication):
-        lists, m = get_sim_data(num_lists, num_elements)
-        run_start = time.time()
-        if opt_type == OptType.naive:
-            _ = naive(lists, m, default_function)
-        else:
-            _ = efficient(lists, m, default_function)
-        run_end = time.time()
-        execution_times.append(run_end - run_start)
-    sim_end = time.time()
-    return {"mean_wall_time": fmean(execution_times), "total_sim_time": sim_end - sim_start}
+class CompareStatsModel(BaseModel):
+    x: int
+    y: List[BenchmarkResponseModel]
+
+
+class CompareResponseModel(BaseModel):
+    data: List[CompareStatsModel]
