@@ -2,7 +2,7 @@ import random, time
 from .models import BenchmarkResponseModel, default_function, OptType
 from statistics import fmean
 from typing import List, Tuple
-from utils.modulo_maximisation import naive, efficient
+from optimisation.modulo_maximisation import naive, efficient
 
 
 def get_sim_data(num_lists: int, num_elements: int, seed: int | float | str = None) -> Tuple[List[List[int]], int]:
