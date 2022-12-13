@@ -10,7 +10,7 @@ from simulations.models import (
     CompareResponseModel,
 )
 from simulations.utils import benchmark_simulation
-from utils.modulo_maximisation import naive, efficient
+from optimisation.modulo_maximisation import naive, efficient
 
 sim_router = APIRouter()
 
