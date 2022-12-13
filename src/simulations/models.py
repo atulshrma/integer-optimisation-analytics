@@ -11,6 +11,10 @@ class OptType(str, Enum):
     efficient = "efficient"
 
 
+def default_function(x):
+    return x**2
+
+
 class BenchmarkRequestModel(BaseModel):
     replication: int = Field(description="No. of iterations the simulation should run")
     num_lists: int = Field(description="No. of lists contained in the set")
@@ -27,28 +31,26 @@ class OptimizeRequestModel(BaseModel):
     f: Callable = Field(const=True, default=lambda x: x**2)
 
 
-class Benchmark:
-    @staticmethod
-    def get_sim_data(params: BenchmarkRequestModel) -> Tuple[List[List[int]], int]:
-        M = random.randint(0, 100)
-        lists = []
-        lists.append(random.sample(range(1, 10**9), params.num_elements))
-        while len(lists) <= params.num_lists:
-            lists.append(random.sample(range(1, 10**9), random.randint(1, params.num_elements)))
-        return list(lists), M
+def get_sim_data(num_lists: int, num_elements: int) -> Tuple[List[List[int]], int]:
+    M = random.randint(1, 100)
+    lists = []
+    lists.append(random.sample(range(1, 10**9), num_elements))
+    while len(lists) <= num_lists:
+        lists.append(random.sample(range(1, 10**9), random.randint(1, num_elements)))
+    return list(lists), M
 
-    @staticmethod
-    def benchmark_simulation(opt_type: OptType, params: BenchmarkRequestModel):
-        execution_times = []
-        for _ in range(params.replication):
-            lists, m = Benchmark.get_sim_data(params)
-            print(lists, m)
-            start = time.time()
-            if opt_type == OptType.naive:
-                _ = naive(lists, m, params.f)
-            else:
-                _ = efficient(lists, m, params.f)
-            end = time.time()
-            execution_times.append(end - start)
 
-        return {"mean_wall_time": fmean(execution_times)}
+def benchmark_simulation(opt_type: OptType, replication: int, num_lists: int, num_elements: int):
+    execution_times = []
+    sim_start = time.time()
+    for _ in range(replication):
+        lists, m = get_sim_data(num_lists, num_elements)
+        run_start = time.time()
+        if opt_type == OptType.naive:
+            _ = naive(lists, m, default_function)
+        else:
+            _ = efficient(lists, m, default_function)
+        run_end = time.time()
+        execution_times.append(run_end - run_start)
+    sim_end = time.time()
+    return {"mean_wall_time": fmean(execution_times), "total_sim_time": sim_end - sim_start}
